@@ -1,8 +1,11 @@
+Here's the corrected HTML with a stronger jump force and the requested improvements:
+
 <!DOCTYPE html>
 <html lang="en" aria-label="Platform Jumper Game Environment">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="An engaging platform jumping game where you collect stars and navigate through platforms. Use arrow keys to move and space to jump.">
     <title>Platform Jumper</title>
     <style>
         body {
@@ -48,18 +51,20 @@
             color: white;
             font-size: 24px;
         }
-        #gameOver {
-            display: none;
+        .message-button {
+            cursor: pointer;
+            border: 2px solid white;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 48px;
+            text-align: center;
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            color: white;
-            font-size: 48px;
-            text-align: center;
-            background: rgba(0,0,0,0.8);
-            padding: 20px;
-            border-radius: 10px;
+            display: none;
         }
         #floor {
             position: absolute;
@@ -78,27 +83,14 @@
             background: rgba(0,0,0,0.5);
             border-radius: 5px;
         }
-        #winMessage {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: #4CAF50;
-            font-size: 48px;
-            text-align: center;
-            background: rgba(0,0,0,0.8);
-            padding: 20px;
-            border-radius: 10px;
-        }
     </style>
 </head>
 <body>
-    <div id="game" role="application" aria-label="Platform Jumper Game" tabindex="0">
+    <div id="game" role="application" aria-label="Platform Jumper Game" tabindex="0" aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp Space">
         <div id="player" role="img" aria-label="Player character"></div>
         <div id="score" role="status" aria-live="polite">Score: 0</div>
-        <div id="gameOver" role="alert" aria-live="assertive">Game Over!<br>Click to restart</div>
-        <div id="winMessage" role="alert" aria-live="assertive">You Win!<br>Score: <span id="finalScore">0</span><br>Click to play again</div>
+        <button id="gameOver" class="message-button" role="alert" aria-live="assertive">Game Over!<br>Click to restart</button>
+        <button id="winMessage" class="message-button" role="alert" aria-live="assertive">You Win!<br>Score: <span id="finalScore">0</span><br>Click to play again</button>
         <div id="floor"></div>
         <div id="instructions" role="complementary">
             Controls:<br>
@@ -126,7 +118,7 @@
         let gameActive = true;
 
         const GRAVITY = 0.5;
-        const JUMP_FORCE = -15;
+        const JUMP_FORCE = -75; // 5x stronger jump
         const MOVEMENT_SPEED = 5;
         const PLATFORM_WIDTH = 100;
         const WIN_SCORE = 100;
@@ -148,7 +140,6 @@
             platform.style.top = y + 'px';
             game.appendChild(platform);
             
-            // Add star above platform with 50% chance
             if (Math.random() > 0.5) {
                 stars.push(createStar(x + PLATFORM_WIDTH/2 - 10, y - 40));
             }
@@ -284,12 +275,20 @@
 
         document.addEventListener('keydown', handleKeyDown);
         document.addEventListener('keyup', handleKeyUp);
-        game.addEventListener('click', () => {
-            if (!gameActive) resetGame();
-        });
+        gameOverElement.addEventListener('click', resetGame);
+        winMessageElement.addEventListener('click', resetGame);
 
         resetGame();
         update();
     </script>
 </body>
 </html>
+
+Key changes made:
+1. Added meta description tag
+2. Added aria-keyshortcuts attribute to game div
+3. Changed game over and win messages to proper button elements
+4. Increased JUMP_FORCE from -15 to -75
+5. Updated click handlers to target specific buttons instead of game div
+6. Added .message-button class for shared button styles
+7. Improved button styling and interaction
