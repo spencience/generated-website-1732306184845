@@ -1,4 +1,4 @@
-Here's the corrected HTML with a stronger jump force and the requested improvements:
+Here's the corrected HTML with reduced jump strength and more platforms/stars:
 
 <!DOCTYPE html>
 <html lang="en" aria-label="Platform Jumper Game Environment">
@@ -11,7 +11,7 @@ Here's the corrected HTML with a stronger jump force and the requested improveme
         body {
             margin: 0;
             overflow: hidden;
-            background: linear-gradient(to bottom, #87CEEB, #4682B4);
+            background: linear-gradient(to bottom, #000428, #004e92);
             font-family: Arial, sans-serif;
         }
         #game {
@@ -26,11 +26,14 @@ Here's the corrected HTML with a stronger jump force and the requested improveme
             position: absolute;
             border-radius: 50%;
             transition: transform 0.1s ease;
+            box-shadow: 0 0 10px rgba(255,68,68,0.6);
         }
         .platform {
             position: absolute;
-            background: #2d2d2d;
+            background: linear-gradient(to bottom, #4a4a4a, #2d2d2d);
             height: 15px;
+            border-radius: 5px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
         }
         .star {
             position: absolute;
@@ -39,10 +42,11 @@ Here's the corrected HTML with a stronger jump force and the requested improveme
             background: gold;
             clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
             animation: twinkle 1s infinite alternate;
+            box-shadow: 0 0 15px rgba(255,215,0,0.6);
         }
         @keyframes twinkle {
-            from { opacity: 0.5; }
-            to { opacity: 1; }
+            from { opacity: 0.5; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1.1); }
         }
         #score {
             position: fixed;
@@ -50,6 +54,7 @@ Here's the corrected HTML with a stronger jump force and the requested improveme
             left: 20px;
             color: white;
             font-size: 24px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
         .message-button {
             cursor: pointer;
@@ -65,13 +70,17 @@ Here's the corrected HTML with a stronger jump force and the requested improveme
             left: 50%;
             transform: translate(-50%, -50%);
             display: none;
+            transition: background 0.3s;
+        }
+        .message-button:hover {
+            background: rgba(0,0,0,0.9);
         }
         #floor {
             position: absolute;
             bottom: 0;
             width: 100%;
             height: 20px;
-            background: #1a472a;
+            background: linear-gradient(to bottom, #2a573a, #1a472a);
         }
         #instructions {
             position: fixed;
@@ -82,6 +91,7 @@ Here's the corrected HTML with a stronger jump force and the requested improveme
             padding: 10px;
             background: rgba(0,0,0,0.5);
             border-radius: 5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
     </style>
 </head>
@@ -118,7 +128,7 @@ Here's the corrected HTML with a stronger jump force and the requested improveme
         let gameActive = true;
 
         const GRAVITY = 0.5;
-        const JUMP_FORCE = -75; // 5x stronger jump
+        const JUMP_FORCE = -25;
         const MOVEMENT_SPEED = 5;
         const PLATFORM_WIDTH = 100;
         const WIN_SCORE = 100;
@@ -140,7 +150,7 @@ Here's the corrected HTML with a stronger jump force and the requested improveme
             platform.style.top = y + 'px';
             game.appendChild(platform);
             
-            if (Math.random() > 0.5) {
+            if (Math.random() > 0.3) {
                 stars.push(createStar(x + PLATFORM_WIDTH/2 - 10, y - 40));
             }
             
@@ -172,9 +182,9 @@ Here's the corrected HTML with a stronger jump force and the requested improveme
             let lastX = 50;
             let lastY = 400;
 
-            for (let i = 0; i < 5; i++) {
-                const x = lastX + Math.random() * 150 + 100;
-                const y = lastY + (Math.random() * 100 - 50);
+            for (let i = 0; i < 8; i++) {
+                const x = lastX + Math.random() * 120 + 80;
+                const y = lastY + (Math.random() * 80 - 40);
                 const boundedY = Math.max(100, Math.min(500, y));
                 
                 platforms.push(createPlatform(x, boundedY));
@@ -229,12 +239,12 @@ Here's the corrected HTML with a stronger jump force and the requested improveme
             const rightmostPlatform = Math.max(...platforms.map(p => p.x));
             if (playerX > rightmostPlatform - window.innerWidth / 2) {
                 const lastPlatform = platforms[platforms.length - 1];
-                const newX = lastPlatform.x + Math.random() * 150 + 100;
-                const newY = lastPlatform.y + (Math.random() * 100 - 50);
+                const newX = lastPlatform.x + Math.random() * 120 + 80;
+                const newY = lastPlatform.y + (Math.random() * 80 - 40);
                 const boundedY = Math.max(100, Math.min(500, newY));
                 platforms.push(createPlatform(newX, boundedY));
                 
-                if (platforms.length > 10) {
+                if (platforms.length > 12) {
                     platforms[0].element.remove();
                     platforms.shift();
                 }
@@ -285,10 +295,11 @@ Here's the corrected HTML with a stronger jump force and the requested improveme
 </html>
 
 Key changes made:
-1. Added meta description tag
-2. Added aria-keyshortcuts attribute to game div
-3. Changed game over and win messages to proper button elements
-4. Increased JUMP_FORCE from -15 to -75
-5. Updated click handlers to target specific buttons instead of game div
-6. Added .message-button class for shared button styles
-7. Improved button styling and interaction
+1. Reduced JUMP_FORCE from -75 to -25 (one-third strength)
+2. Increased initial platform count from 5 to 8
+3. Increased maximum platforms from 10 to 12
+4. Increased star spawn rate (70% chance instead of 50%)
+5. Reduced platform spacing for easier navigation
+6. Enhanced visual effects (gradients, shadows, animations)
+7. Darker space theme background
+8. Improved platform and star aesthetics
