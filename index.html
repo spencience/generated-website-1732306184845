@@ -1,1 +1,206 @@
-<@1305663166180753419> alright let's give it another shot part 2.  fix this website so the platform placement is smarter fix this so that the platform placement is smarter https://spencience.github.io/generated-website-1732306184845
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platform Jumper</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #87CEEB, #4682B4);
+        }
+        #game {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        #player {
+            width: 30px;
+            height: 30px;
+            background: #ff4444;
+            position: absolute;
+            border-radius: 50%;
+        }
+        .platform {
+            position: absolute;
+            background: #2d2d2d;
+            height: 15px;
+        }
+        #score {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+        }
+        #gameOver {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 48px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="game">
+        <div id="player"></div>
+        <div id="score">Score: 0</div>
+        <div id="gameOver">Game Over!<br>Click to restart</div>
+    </div>
+    <script>
+        const game = document.getElementById('game');
+        const player = document.getElementById('player');
+        const scoreElement = document.getElementById('score');
+        const gameOverElement = document.getElementById('gameOver');
+
+        let playerX = 100;
+        let playerY = 300;
+        let velocityY = 0;
+        let velocityX = 0;
+        let platforms = [];
+        let score = 0;
+        let gameActive = true;
+
+        const GRAVITY = 0.5;
+        const JUMP_FORCE = -12;
+        const MOVEMENT_SPEED = 5;
+        const PLATFORM_WIDTH = 100;
+        const PLATFORM_GAP = 200;
+
+        function createPlatform(x, y) {
+            const platform = document.createElement('div');
+            platform.className = 'platform';
+            platform.style.width = PLATFORM_WIDTH + 'px';
+            platform.style.left = x + 'px';
+            platform.style.top = y + 'px';
+            game.appendChild(platform);
+            return { element: platform, x, y };
+        }
+
+        function initializePlatforms() {
+            // Clear existing platforms
+            platforms.forEach(p => p.element.remove());
+            platforms = [];
+
+            // Create initial platforms with smarter placement
+            const numPlatforms = 5;
+            let lastX = 50;
+            let lastY = 400;
+
+            for (let i = 0; i < numPlatforms; i++) {
+                // Vary X position within reasonable bounds
+                const x = lastX + Math.random() * 150 + 100;
+                // Vary Y position to create interesting but achievable jumps
+                const y = lastY + (Math.random() * 100 - 50);
+                // Keep platforms within reasonable height bounds
+                const boundedY = Math.max(100, Math.min(500, y));
+                
+                platforms.push(createPlatform(x, boundedY));
+                lastX = x;
+                lastY = boundedY;
+            }
+        }
+
+        function update() {
+            if (!gameActive) return;
+
+            velocityY += GRAVITY;
+            playerY += velocityY;
+            playerX += velocityX;
+
+            // Check platform collisions
+            platforms.forEach(platform => {
+                if (velocityY > 0 &&
+                    playerY + 30 >= platform.y &&
+                    playerY + 30 <= platform.y + 15 &&
+                    playerX + 30 > platform.x &&
+                    playerX < platform.x + PLATFORM_WIDTH) {
+                    playerY = platform.y - 30;
+                    velocityY = 0;
+                }
+            });
+
+            // Screen boundaries
+            if (playerX < 0) playerX = 0;
+            if (playerX > window.innerWidth - 30) playerX = window.innerWidth - 30;
+
+            // Game over condition
+            if (playerY > window.innerHeight) {
+                gameActive = false;
+                gameOverElement.style.display = 'block';
+            }
+
+            // Update player position
+            player.style.left = playerX + 'px';
+            player.style.top = playerY + 'px';
+
+            // Platform management
+            const rightmostPlatform = Math.max(...platforms.map(p => p.x));
+            if (playerX > rightmostPlatform - window.innerWidth / 2) {
+                const lastPlatform = platforms[platforms.length - 1];
+                const newX = lastPlatform.x + Math.random() * 150 + 100;
+                const newY = lastPlatform.y + (Math.random() * 100 - 50);
+                const boundedY = Math.max(100, Math.min(500, newY));
+                platforms.push(createPlatform(newX, boundedY));
+                
+                // Remove off-screen platforms
+                if (platforms.length > 10) {
+                    platforms[0].element.remove();
+                    platforms.shift();
+                }
+
+                // Update score
+                score++;
+                scoreElement.textContent = `Score: ${score}`;
+            }
+
+            requestAnimationFrame(update);
+        }
+
+        function jump() {
+            if (velocityY === 0) {
+                velocityY = JUMP_FORCE;
+            }
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === 'ArrowLeft') velocityX = -MOVEMENT_SPEED;
+            if (e.key === 'ArrowRight') velocityX = MOVEMENT_SPEED;
+            if (e.key === ' ' || e.key === 'ArrowUp') jump();
+        }
+
+        function handleKeyUp(e) {
+            if (e.key === 'ArrowLeft' && velocityX < 0) velocityX = 0;
+            if (e.key === 'ArrowRight' && velocityX > 0) velocityX = 0;
+        }
+
+        function resetGame() {
+            playerX = 100;
+            playerY = 300;
+            velocityY = 0;
+            velocityX = 0;
+            score = 0;
+            scoreElement.textContent = 'Score: 0';
+            gameActive = true;
+            gameOverElement.style.display = 'none';
+            initializePlatforms();
+        }
+
+        document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('keyup', handleKeyUp);
+        game.addEventListener('click', () => {
+            if (!gameActive) resetGame();
+        });
+
+        resetGame();
+        update();
+    </script>
+</body>
+</html>
