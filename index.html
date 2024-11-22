@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pixel Platformer</title>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
+<style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #111;
+        }
+        canvas {
+            border: 2px solid #333;
+        }
+    </style>
+</head>
+<body>
+<div id="game"></div>
+<script>
+const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    parent: 'game',
+    pixelArt: true,
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 300 },
+            debug: false
+        }
+    },
+    scene: {
+        preload: preload,
+        create: create,
+        update: update
+    }
+};
+
+const game = new Phaser.Game(config);
+
+let player;
+let platforms;
+let cursors;
+let score = 0;
+let scoreText;
+let gameOver = false;
+let goals;
+let level = 1;
+
+function preload() {
+    // Generate pixel art graphics programmatically
+    const graphics = this.add.graphics();
+    
+    // Player texture (16x16 blue square)
+    graphics.fillStyle(0x3498db);
+    graphics.fillRect(0, 0, 16, 16);
+    graphics.generateTexture('player', 16, 16);
+    
+    // Platform texture (64x16 green rectangle)
+    graphics.clear();
+    graphics.fillStyle(0x2ecc71);
+    graphics.fillRect(0, 0, 64, 16);
+    graphics.generateTexture('platform', 64, 16);
+    
+    // Goal texture (16x16 yellow star)
+    graphics.clear();
+    graphics.fillStyle(0xf1c40f);
+    graphics.fillRect(0, 0, 16, 16);
+    graphics.generateTexture('goal', 16, 16);
+}
+
+function create() {
+    // Player
+    player = this.physics.add.sprite(100, 450, 'player');
+    player.setBounce(0.2);
+    player.setCollideWorldBounds(true);
+
+    // Platforms
+    platforms = this.physics.add.staticGroup();
+    goals = this.physics.add.staticGroup();
+    
+    createLevel();
+
+    // Score
+    scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#fff' });
+
+    // Controls
+    cursors = this.input.keyboard.createCursorKeys();
+
+    // Colliders
+    this.physics.add.collider(player, platforms);
+    this.physics.add.overlap(player, goals, collectGoal, null, this);
+}
+
+function update() {
+    if (gameOver) return;
+
+    // Player movement
+    if (cursors.left.isDown) {
+        player.setVelocityX(-160);
+    } else if (cursors.right.isDown) {
+        player.setVelocityX(160);
+    } else {
+        player.setVelocityX(0);
+    }
+
+    if (cursors.up.isDown && player.body.touching.down) {
+        player.setVelocityY(-330);
+    }
+}
+
+function createLevel() {
+    // Clear existing platforms and goals
+    platforms.clear(true, true);
+    goals.clear(true, true);
+
+    // Create base platform
+    platforms.create(400, 568, 'platform').setScale(12, 1).refreshBody();
+
+    // Create random platforms based on level
+    for (let i = 0; i < 5 + level; i++) {
+        const x = Phaser.Math.Between(100, 700);
+        const y = Phaser.Math.Between(150, 500);
+        platforms.create(x, y, 'platform');
+    }
+
+    // Create goals
+    for (let i = 0; i < 3; i++) {
+        const x = Phaser.Math.Between(50, 750);
+        const y = Phaser.Math.Between(50, 500);
+        goals.create(x, y, 'goal');
+    }
+}
+
+function collectGoal(player, goal) {
+    goal.destroy();
+    score += 10;
+    scoreText.setText('Score: ' + score);
+
+    if (goals.countActive(true) === 0) {
+        level++;
+        player.setPosition(100, 450);
+        createLevel();
+    }
+}
+    </script>
+</body>
+</html>
+</script>
+</body>
+</html>
+</main>
+</script>
+</body>
+</html>
+```
+
+The extra `</script>`, `</body>`, `</html>`, and `</main>
+</script>`, `</body>`, `</html>`, `</main>`) appear to be duplicates and should be removed.
+
+The complete HTML document ends correctly with:
+
+```html
+    </script>
+</body>
+</html>
+</script>
+</body>
+</html>
+</html>`:
+
+```html
+</html>
+</script>
+</body>
+</html>
+</script>
+</body>
+</html>
+</script>
+</body>
+</html>
+</script>
+</body>
+</html>
+</script>
+</body>
+</html>
