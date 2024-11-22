@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" aria-label="Platform Jumper Game Environment">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,11 +22,24 @@
             background: #ff4444;
             position: absolute;
             border-radius: 50%;
+            transition: transform 0.1s ease;
         }
         .platform {
             position: absolute;
             background: #2d2d2d;
             height: 15px;
+        }
+        .star {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: gold;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            animation: twinkle 1s infinite alternate;
+        }
+        @keyframes twinkle {
+            from { opacity: 0.5; }
+            to { opacity: 1; }
         }
         #score {
             position: fixed;
@@ -44,6 +57,9 @@
             color: white;
             font-size: 48px;
             text-align: center;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 10px;
         }
         #floor {
             position: absolute;
@@ -78,7 +94,7 @@
     </style>
 </head>
 <body>
-    <div id="game" role="application" aria-label="Platform Jumper Game">
+    <div id="game" role="application" aria-label="Platform Jumper Game" tabindex="0">
         <div id="player" role="img" aria-label="Player character"></div>
         <div id="score" role="status" aria-live="polite">Score: 0</div>
         <div id="gameOver" role="alert" aria-live="assertive">Game Over!<br>Click to restart</div>
@@ -88,7 +104,8 @@
             Controls:<br>
             ← → Arrow keys to move<br>
             Space/↑ to jump<br>
-            Reach score 50 to win!
+            Collect stars for points!<br>
+            Reach score 100 to win!
         </div>
     </div>
     <script>
@@ -104,14 +121,24 @@
         let velocityY = 0;
         let velocityX = 0;
         let platforms = [];
+        let stars = [];
         let score = 0;
         let gameActive = true;
 
         const GRAVITY = 0.5;
-        const JUMP_FORCE = -12;
+        const JUMP_FORCE = -15;
         const MOVEMENT_SPEED = 5;
         const PLATFORM_WIDTH = 100;
-        const WIN_SCORE = 50;
+        const WIN_SCORE = 100;
+
+        function createStar(x, y) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = x + 'px';
+            star.style.top = y + 'px';
+            game.appendChild(star);
+            return { element: star, x, y, collected: false };
+        }
 
         function createPlatform(x, y) {
             const platform = document.createElement('div');
@@ -120,12 +147,36 @@
             platform.style.left = x + 'px';
             platform.style.top = y + 'px';
             game.appendChild(platform);
+            
+            // Add star above platform with 50% chance
+            if (Math.random() > 0.5) {
+                stars.push(createStar(x + PLATFORM_WIDTH/2 - 10, y - 40));
+            }
+            
             return { element: platform, x, y };
+        }
+
+        function collectStars() {
+            stars.forEach(star => {
+                if (!star.collected &&
+                    playerX < star.x + 20 &&
+                    playerX + 30 > star.x &&
+                    playerY < star.y + 20 &&
+                    playerY + 30 > star.y) {
+                    star.collected = true;
+                    star.element.remove();
+                    score += 10;
+                    scoreElement.textContent = `Score: ${score}`;
+                    checkWin();
+                }
+            });
         }
 
         function initializePlatforms() {
             platforms.forEach(p => p.element.remove());
+            stars.forEach(s => s.element.remove());
             platforms = [];
+            stars = [];
 
             let lastX = 50;
             let lastY = 400;
@@ -155,6 +206,8 @@
             velocityY += GRAVITY;
             playerY += velocityY;
             playerX += velocityX;
+
+            collectStars();
 
             platforms.forEach(platform => {
                 if (velocityY > 0 &&
@@ -194,10 +247,6 @@
                     platforms[0].element.remove();
                     platforms.shift();
                 }
-
-                score++;
-                scoreElement.textContent = `Score: ${score}`;
-                checkWin();
             }
 
             requestAnimationFrame(update);
