@@ -9,6 +9,7 @@
             margin: 0;
             overflow: hidden;
             background: linear-gradient(to bottom, #87CEEB, #4682B4);
+            font-family: Arial, sans-serif;
         }
         #game {
             width: 100vw;
@@ -32,7 +33,6 @@
             top: 20px;
             left: 20px;
             color: white;
-            font-family: Arial, sans-serif;
             font-size: 24px;
         }
         #gameOver {
@@ -42,23 +42,62 @@
             left: 50%;
             transform: translate(-50%, -50%);
             color: white;
-            font-family: Arial, sans-serif;
             font-size: 48px;
             text-align: center;
+        }
+        #floor {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 20px;
+            background: #1a472a;
+        }
+        #instructions {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: white;
+            text-align: right;
+            padding: 10px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 5px;
+        }
+        #winMessage {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #4CAF50;
+            font-size: 48px;
+            text-align: center;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
-    <div id="game">
-        <div id="player"></div>
-        <div id="score">Score: 0</div>
-        <div id="gameOver">Game Over!<br>Click to restart</div>
+    <div id="game" role="application" aria-label="Platform Jumper Game">
+        <div id="player" role="img" aria-label="Player character"></div>
+        <div id="score" role="status" aria-live="polite">Score: 0</div>
+        <div id="gameOver" role="alert" aria-live="assertive">Game Over!<br>Click to restart</div>
+        <div id="winMessage" role="alert" aria-live="assertive">You Win!<br>Score: <span id="finalScore">0</span><br>Click to play again</div>
+        <div id="floor"></div>
+        <div id="instructions" role="complementary">
+            Controls:<br>
+            ← → Arrow keys to move<br>
+            Space/↑ to jump<br>
+            Reach score 50 to win!
+        </div>
     </div>
     <script>
         const game = document.getElementById('game');
         const player = document.getElementById('player');
         const scoreElement = document.getElementById('score');
         const gameOverElement = document.getElementById('gameOver');
+        const winMessageElement = document.getElementById('winMessage');
+        const finalScoreElement = document.getElementById('finalScore');
 
         let playerX = 100;
         let playerY = 300;
@@ -72,7 +111,7 @@
         const JUMP_FORCE = -12;
         const MOVEMENT_SPEED = 5;
         const PLATFORM_WIDTH = 100;
-        const PLATFORM_GAP = 200;
+        const WIN_SCORE = 50;
 
         function createPlatform(x, y) {
             const platform = document.createElement('div');
@@ -85,26 +124,28 @@
         }
 
         function initializePlatforms() {
-            // Clear existing platforms
             platforms.forEach(p => p.element.remove());
             platforms = [];
 
-            // Create initial platforms with smarter placement
-            const numPlatforms = 5;
             let lastX = 50;
             let lastY = 400;
 
-            for (let i = 0; i < numPlatforms; i++) {
-                // Vary X position within reasonable bounds
+            for (let i = 0; i < 5; i++) {
                 const x = lastX + Math.random() * 150 + 100;
-                // Vary Y position to create interesting but achievable jumps
                 const y = lastY + (Math.random() * 100 - 50);
-                // Keep platforms within reasonable height bounds
                 const boundedY = Math.max(100, Math.min(500, y));
                 
                 platforms.push(createPlatform(x, boundedY));
                 lastX = x;
                 lastY = boundedY;
+            }
+        }
+
+        function checkWin() {
+            if (score >= WIN_SCORE) {
+                gameActive = false;
+                finalScoreElement.textContent = score;
+                winMessageElement.style.display = 'block';
             }
         }
 
@@ -115,7 +156,6 @@
             playerY += velocityY;
             playerX += velocityX;
 
-            // Check platform collisions
             platforms.forEach(platform => {
                 if (velocityY > 0 &&
                     playerY + 30 >= platform.y &&
@@ -127,21 +167,21 @@
                 }
             });
 
-            // Screen boundaries
             if (playerX < 0) playerX = 0;
             if (playerX > window.innerWidth - 30) playerX = window.innerWidth - 30;
+            if (playerY > window.innerHeight - 50) {
+                playerY = window.innerHeight - 50;
+                velocityY = 0;
+            }
 
-            // Game over condition
-            if (playerY > window.innerHeight) {
+            if (playerY > window.innerHeight - 30) {
                 gameActive = false;
                 gameOverElement.style.display = 'block';
             }
 
-            // Update player position
             player.style.left = playerX + 'px';
             player.style.top = playerY + 'px';
 
-            // Platform management
             const rightmostPlatform = Math.max(...platforms.map(p => p.x));
             if (playerX > rightmostPlatform - window.innerWidth / 2) {
                 const lastPlatform = platforms[platforms.length - 1];
@@ -150,15 +190,14 @@
                 const boundedY = Math.max(100, Math.min(500, newY));
                 platforms.push(createPlatform(newX, boundedY));
                 
-                // Remove off-screen platforms
                 if (platforms.length > 10) {
                     platforms[0].element.remove();
                     platforms.shift();
                 }
 
-                // Update score
                 score++;
                 scoreElement.textContent = `Score: ${score}`;
+                checkWin();
             }
 
             requestAnimationFrame(update);
@@ -190,6 +229,7 @@
             scoreElement.textContent = 'Score: 0';
             gameActive = true;
             gameOverElement.style.display = 'none';
+            winMessageElement.style.display = 'none';
             initializePlatforms();
         }
 
